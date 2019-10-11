@@ -5,6 +5,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { View } from 'react-native';
+import memoize from "memoize-one";
 import parser from './lib/parser';
 import applyStyle from './lib/util/applyStyle';
 import getUniqueID from './lib/util/getUniqueID';
@@ -123,7 +124,7 @@ export default class Markdown extends Component {
    *
    * @param props
    */
-  updateSettings(props = this.props) {
+  updateSettings = memoize((props = this.props) => {
     const { renderer, rules, style, plugins, markdownit } = props;
 
     if (renderer && rules) {
@@ -178,21 +179,13 @@ export default class Markdown extends Component {
 
       this.markdownParser = md;
     }
-  }
+  });
 
   /**
    *
    */
-  componentWillMount() {
+  componentDidMount() {
     this.updateSettings(this.props);
-  }
-
-  /**
-   *
-   * @param nextProps
-   */
-  componentWillReceiveProps(nextProps) {
-    this.updateSettings(nextProps);
   }
 
   /**
@@ -210,6 +203,7 @@ export default class Markdown extends Component {
    */
   render() {
     const copy = (this.copy = this.getCopyFromChildren());
+    this.updateSettings(this.props);
     return parser(copy, this.renderer.render, this.markdownParser);
   }
 }
